@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>乘车码</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{background:#07c160;color:#fff;font:600 17px/1.5 -apple-system,BlinkMacSystemFont,sans-serif;
+         display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;text-align:center}
+    .logo{width:64px;height:64px;background:rgba(255,255,255,.2);border-radius:16px;
+          display:flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:20px}
+    .status{margin-bottom:8px}
+    .hint{font-size:14px;opacity:.75}
+    .btn{display:inline-block;margin-top:24px;padding:14px 32px;background:#fff;color:#07c160;
+         border-radius:14px;text-decoration:none;font-weight:700}
+  </style>
+</head>
+<body>
+  <div class="logo">🚌</div>
+  <div class="status" id="s">正在唤起微信…</div>
+  <div class="hint" id="h">请稍候</div>
+  <a class="btn" id="manual" href="#" style="display:none">没反应？点这里</a>
+
+  <script>
+    // ===== 只改这一行就行 =====
+    const LINKS = [
+      "https://wxmpurl.cn/7haoTr6TKmc",   // 主链接
+      // "https://wxaurl.cn/备用链接放这", // 备用1（需要时取消注释）
+    ];
+    // =========================
+
+    let idx = 0, done = false;
+    const s = document.getElementById('s'), h = document.getElementById('h'), btn = document.getElementById('manual');
+
+    function go(i){
+      if(i >= LINKS.length){ s.textContent='链接可能已过期'; h.textContent='回微信重新复制新链接'; return; }
+      idx = i;
+      btn.href = LINKS[i];
+      setTimeout(()=>{ window.location.href = LINKS[i]; }, 350);
+    }
+
+    window.onload = ()=>{
+      // 已在微信里就别绕了
+      if(/MicroMessenger/i.test(navigator.userAgent)){
+        s.textContent='你已在微信'; h.textContent='直接下拉点乘车码更快';
+        btn.style.display='inline-block'; btn.href='weixin://'; btn.textContent='打开微信首页';
+        return;
+      }
+      go(0);
+    };
+
+    document.addEventListener('visibilitychange', ()=>{
+      if(document.hidden){ done = true; s.textContent='已跳转微信 ✓'; }
+    });
+
+    // 2.5 秒没跳走就显示手动按钮
+    setTimeout(()=>{
+      if(!done){ btn.style.display='inline-block'; h.textContent='自动跳转被拦截，点按钮继续'; }
+    }, 2500);
+
+    btn.addEventListener('click', (e)=>{
+      e.preventDefault();
+      if(done) return;
+      go(idx+1);
+      setTimeout(()=>{ if(!done) btn.style.display='inline-block'; }, 2500);
+    });
+  </script>
+</body>
+</html>
